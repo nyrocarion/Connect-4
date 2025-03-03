@@ -16,7 +16,10 @@
   - Place marks by clicking on slot / by clicking on column the mark should be placed in
   - Reset Function
   - Manage Users
-  - Color Themes
+  - Falling Animation of the marks
+  - Different Difficulties with different grids
+  - Center the grid in the screen based on resolution
+  - Configure Resolution and Color Theme
 - Optional Ideas
   - AI player for a single player
   - non-local Multiplayer  
