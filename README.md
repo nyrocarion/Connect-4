@@ -3,7 +3,7 @@
 # Requirements
 
 - Screens
-  - Start Screen
+  - ✅Start Screen
   - Start Menu
   - Settings Menu
   - Leaderboard Menu
