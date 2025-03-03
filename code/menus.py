@@ -6,14 +6,15 @@ def get_middle():
     return center
 
 class Start_Screen(object):
-    def __init__(self,screen,font_manager):
+    def __init__(self,screen,asset_manager):
         self.running = True
         self.screen = screen
-        self.fonts = font_manager.get_fonts()
+        self.fonts = asset_manager.get_fonts()
+        self.background_music = asset_manager.get_music()["title"]
+        self.sounds = asset_manager.get_sounds()
         self.clock = pygame.time.Clock()
         self.fps = 20
         self.loop()
-        
 
     def loop(self):
         pygame.display.set_caption('Welcome to Connect 4 by nyronik')
@@ -29,6 +30,8 @@ class Start_Screen(object):
         enter_big = self.fonts["medium_title_font_bigger"].render(enter_text,True,"white")
 
         counter = 0
+        pygame.mixer.music.load(self.background_music)
+        pygame.mixer.music.play(-1)
         while self.running:
             counter = (counter + 1)%20
             self.clock.tick(self.fps)
@@ -53,4 +56,8 @@ class Start_Screen(object):
                 self.screen.blit(enter,enter_pos)
             
             pygame.display.flip()
+        pygame.mixer.music.stop()
+        pygame.time.wait(20)
+        pygame.mixer.Sound.play(self.sounds["select"])
+        pygame.time.wait(350)
 

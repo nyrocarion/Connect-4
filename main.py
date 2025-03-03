@@ -1,6 +1,6 @@
 import pygame
 from code.menus import Start_Screen
-from code.font_manager import Font_Manager
+from code.asset_manager import Asset_Manager
 
 class Main(object):
     def __init__(self):
@@ -9,8 +9,8 @@ class Main(object):
         self.fps = 60
         self.screen = pygame.display.set_mode((1400, 1000))
 
-        self.font_manager = Font_Manager()
-        start_screen = Start_Screen(self.screen,self.font_manager)
+        self.asset_manager = Asset_Manager()
+        start_screen = Start_Screen(self.screen,self.asset_manager)
         self.running = True
         self.mainloop()
 
