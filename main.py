@@ -1,5 +1,6 @@
 import pygame
 from code.menus import Start_Screen
+from code.menus import Main_Menu
 from code.asset_manager import Asset_Manager
 
 class Main(object):
@@ -7,10 +8,11 @@ class Main(object):
         pygame.init()
         self.clock = pygame.time.Clock()
         self.fps = 60
-        self.screen = pygame.display.set_mode((1400, 1000))
+        self.screen = pygame.display.set_mode((1920, 900))
 
         self.asset_manager = Asset_Manager()
         start_screen = Start_Screen(self.screen,self.asset_manager)
+        start_menu = Main_Menu(self.screen,self.asset_manager)
         self.running = True
         self.mainloop()
 

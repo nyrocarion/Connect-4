@@ -4,7 +4,7 @@
 
 - Screens
   - ✅Start Screen
-  - Start Menu
+  - ✅Start Menu
   - Settings Menu
   - Leaderboard Menu
   - Game Screen
