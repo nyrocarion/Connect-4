@@ -11,11 +11,13 @@ class Asset_Manager(object):
         title_font = pygame.font.Font(title_font_path,50)
         medium_title_font = pygame.font.Font(title_font_path,25)
         medium_title_font_2 = pygame.font.Font(title_font_path,28)
+        small_title_font = pygame.font.Font(title_font_path,15)
         self.fonts = {
             "title_font_big" : title_font_big,
             "title_font" : title_font,
             "medium_title_font" : medium_title_font,
-            "medium_title_font_bigger" : medium_title_font_2
+            "medium_title_font_bigger" : medium_title_font_2,
+            "small_title_font" : small_title_font
         }
         # Sounds
         select_sound_path = os.path.join(root_dir, "assets", "sounds", "Select_Sound_Whistle.mp3")

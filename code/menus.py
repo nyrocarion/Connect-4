@@ -16,12 +16,13 @@ def get_screen_dim():
     return (width,height)
 
 class Start_Screen(object):
-    def __init__(self,screen,asset_manager):
+    def __init__(self,main):
+        self.main = main
         self.running = True
-        self.screen = screen
-        self.fonts = asset_manager.get_fonts()
-        self.background_music = asset_manager.get_music()["title"]
-        self.sounds = asset_manager.get_sounds()
+        self.screen = self.main.get_screen()
+        self.fonts = self.main.get_asset_manager().get_fonts()
+        self.background_music = self.main.get_asset_manager().get_music()["title"]
+        self.sounds = self.main.get_asset_manager().get_sounds()
         self.clock = pygame.time.Clock()
         self.fps = 20
         self.loop()
@@ -42,6 +43,7 @@ class Start_Screen(object):
         counter = 0
         pygame.mixer.music.load(self.background_music)
         pygame.mixer.music.play(-1)
+        start_next_menu = False
         while self.running:
             counter = (counter + 1)%20
             self.clock.tick(self.fps)
@@ -51,7 +53,11 @@ class Start_Screen(object):
                     pygame.quit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
+                        start_next_menu = True
+                    if event.key == pygame.K_ESCAPE:
                         self.running = False
+                        
+                    
             self.screen.fill((0,0,0))
             # Blit Text
             self.screen.blit(title_shadow,(title_pos[0]+5,title_pos[1]+5))
@@ -66,30 +72,35 @@ class Start_Screen(object):
                 self.screen.blit(enter,enter_pos)
             
             pygame.display.flip()
+            if start_next_menu:
+                start_next_menu = False
+                Main_Menu(self.main)
         pygame.mixer.music.stop()
         pygame.time.wait(20)
         pygame.mixer.Sound.play(self.sounds["select"])
         pygame.time.wait(350)
     
 class Main_Menu(object):
-    def __init__(self,screen,asset_manager):
+    def __init__(self,main):
+        self.main = main
         self.running = True
-        self.screen = screen
-        self.fonts = asset_manager.get_fonts()
-        self.background_music = asset_manager.get_music()["title"]
-        self.sounds = asset_manager.get_sounds()
-        self.asset_manager = asset_manager
+        self.screen = self.main.get_screen()
+        self.fonts = self.main.get_asset_manager().get_fonts()
+        self.background_music = self.main.get_asset_manager().get_music()["title"]
+        self.sounds = self.main.get_asset_manager().get_sounds()
+        self.asset_manager = self.main.get_asset_manager()
         self.clock = pygame.time.Clock()
         self.fps = 20
         self.menu_options = ["Manage players","Difficulty","Leaderboard","Settings","Credits"]
         self.menu_calls = {
-            "Manage players" : None,
-            "Difficulty" : None,
-            "Leaderboard" : None,
+            "Manage players" : Players_Menu,
+            "Difficulty" : Difficulty_Menu,
+            "Leaderboard" : Leaderboard_Menu,
             "Settings" : Settings_Menu,
-            "Credits" : None
+            "Credits" : Credits_Menu
         }
         self.loop()
+
 
     def loop(self):
         pygame.display.set_caption('Connect 4 Startmenu')
@@ -109,6 +120,11 @@ class Main_Menu(object):
         bottom_msg_size = self.fonts["medium_title_font"].size(bottom_msg_text)
         bottom_msg_pos = (get_middle()[0]-(bottom_msg_size[0]/2),get_screen_dim()[1]-50-bottom_msg_size[1])
 
+        leave_text = "Press ESC to leave"
+        leave = self.fonts["small_title_font"].render(leave_text,True,WHITE)
+        leave_size = self.fonts["small_title_font"].size(leave_text)
+        leave_pos = (50,50)
+
         menu_rect = pygame.rect.Rect( (0,0),(400,70))
 
         pygame.mixer.music.load(self.background_music)
@@ -116,6 +132,7 @@ class Main_Menu(object):
         counter = 0
         mouse_pos = pygame.mouse.get_pos()
         self.already_over_it = None
+        game_start = False
         while self.running:
             clicked = False
             prev_mouse_pos = mouse_pos
@@ -127,8 +144,11 @@ class Main_Menu(object):
                     self.running = False
                     pygame.quit()
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.running = False
                     if event.key == pygame.K_RETURN:
                         self.running = False
+                        game_start = True
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         clicked = True
@@ -137,6 +157,7 @@ class Main_Menu(object):
             self.screen.blit(title_shadow,(title_pos[0]+5,title_pos[1]+5))
             self.screen.blit(title,title_pos)
             self.screen.blit(bottom_msg,bottom_msg_pos)
+            self.screen.blit(leave,leave_pos)
             if counter <= 10:
                 press_enter_size = self.fonts["medium_title_font_bigger"].size(press_enter_text)
                 press_enter_pos = (get_middle()[0]-(press_enter_size[0]/2),get_screen_dim()[1]-50-bottom_msg_size[1]-press_enter_size[1]-10)
@@ -187,6 +208,10 @@ class Main_Menu(object):
         pygame.time.wait(20)
         pygame.mixer.Sound.play(self.sounds["select"])
         pygame.time.wait(350)
+        if game_start:
+            print("Game should now start")
+        else:
+            print("Escape was pressed")
 
 class Settings_Menu(object):
     def __init__(self,screen,asset_manager):
@@ -202,11 +227,15 @@ class Settings_Menu(object):
     def loop(self):
         pygame.display.set_caption('Connect 4 Settings')
         title_text = "Settings"
+        title = self.fonts["title_font_big"].render(title_text,True,WHITE)
+        title_shadow = self.fonts["title_font_big"].render(title_text,True,GREY)
+        title_size = self.fonts["title_font_big"].size(title_text)
+        title_pos = (get_middle()[0]-(title_size[0]/2),50)
 
-        title = self.fonts["title_font"].render(title_text,True,WHITE)
-        title_shadow = self.fonts["title_font"].render(title_text,True,GREY)
-        title_size = self.fonts["title_font"].size(title_text)
-        title_pos = (get_middle()[0]-(title_size[0]/2),get_middle()[1]-(title_size[1]/2))
+        leave_text = "Press ESC to leave"
+        leave = self.fonts["small_title_font"].render(leave_text,True,WHITE)
+        leave_size = self.fonts["small_title_font"].size(leave_text)
+        leave_pos = (get_middle()[0]-(leave_size[0]/2),get_screen_dim()[1]-50-leave_size[1])
 
         while self.running:
             self.clock.tick(self.fps)
@@ -215,11 +244,176 @@ class Settings_Menu(object):
                     self.running = False
                     pygame.quit()
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
+                    if event.key == pygame.K_ESCAPE:
                         self.running = False
             self.screen.fill((0,0,0))
             # Blit Text
             self.screen.blit(title_shadow,(title_pos[0]+5,title_pos[1]+5))
             self.screen.blit(title,title_pos)
+            self.screen.blit(leave,leave_pos)
+            
+            pygame.display.flip()
+
+class Credits_Menu(object):
+    def __init__(self,screen,asset_manager):
+        self.running = True
+        self.screen = screen
+        self.fonts = asset_manager.get_fonts()
+        self.background_music = asset_manager.get_music()["title"]
+        self.sounds = asset_manager.get_sounds()
+        self.clock = pygame.time.Clock()
+        self.fps = 20
+        self.loop()
+
+    def loop(self):
+        pygame.display.set_caption('Connect 4 Credits')
+        title_text = "Credits"
+        title = self.fonts["title_font_big"].render(title_text,True,WHITE)
+        title_shadow = self.fonts["title_font_big"].render(title_text,True,GREY)
+        title_size = self.fonts["title_font_big"].size(title_text)
+        title_pos = (get_middle()[0]-(title_size[0]/2),50)
+
+        leave_text = "Press ESC to leave"
+        leave = self.fonts["small_title_font"].render(leave_text,True,WHITE)
+        leave_size = self.fonts["small_title_font"].size(leave_text)
+        leave_pos = (get_middle()[0]-(leave_size[0]/2),get_screen_dim()[1]-50-leave_size[1])
+
+        while self.running:
+            self.clock.tick(self.fps)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  
+                    self.running = False
+                    pygame.quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.running = False
+            self.screen.fill((0,0,0))
+            # Blit Text
+            self.screen.blit(title_shadow,(title_pos[0]+5,title_pos[1]+5))
+            self.screen.blit(title,title_pos)
+            self.screen.blit(leave,leave_pos)
+            
+            pygame.display.flip()
+
+class Leaderboard_Menu(object):
+    def __init__(self,screen,asset_manager):
+        self.running = True
+        self.screen = screen
+        self.fonts = asset_manager.get_fonts()
+        self.background_music = asset_manager.get_music()["title"]
+        self.sounds = asset_manager.get_sounds()
+        self.clock = pygame.time.Clock()
+        self.fps = 20
+        self.loop()
+
+    def loop(self):
+        pygame.display.set_caption('Connect 4 Leaderboard')
+        title_text = "Leaderboard"
+        title = self.fonts["title_font_big"].render(title_text,True,WHITE)
+        title_shadow = self.fonts["title_font_big"].render(title_text,True,GREY)
+        title_size = self.fonts["title_font_big"].size(title_text)
+        title_pos = (get_middle()[0]-(title_size[0]/2),50)
+
+        leave_text = "Press ESC to leave"
+        leave = self.fonts["small_title_font"].render(leave_text,True,WHITE)
+        leave_size = self.fonts["small_title_font"].size(leave_text)
+        leave_pos = (get_middle()[0]-(leave_size[0]/2),get_screen_dim()[1]-50-leave_size[1])
+
+        while self.running:
+            self.clock.tick(self.fps)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  
+                    self.running = False
+                    pygame.quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.running = False
+            self.screen.fill((0,0,0))
+            # Blit Text
+            self.screen.blit(title_shadow,(title_pos[0]+5,title_pos[1]+5))
+            self.screen.blit(title,title_pos)
+            self.screen.blit(leave,leave_pos)
+            
+            pygame.display.flip()
+
+class Difficulty_Menu(object):
+    def __init__(self,screen,asset_manager):
+        self.running = True
+        self.screen = screen
+        self.fonts = asset_manager.get_fonts()
+        self.background_music = asset_manager.get_music()["title"]
+        self.sounds = asset_manager.get_sounds()
+        self.clock = pygame.time.Clock()
+        self.fps = 20
+        self.loop()
+
+    def loop(self):
+        pygame.display.set_caption('Connect 4 Difficulty Settings')
+        title_text = "Modify Difficulty"
+        title = self.fonts["title_font_big"].render(title_text,True,WHITE)
+        title_shadow = self.fonts["title_font_big"].render(title_text,True,GREY)
+        title_size = self.fonts["title_font_big"].size(title_text)
+        title_pos = (get_middle()[0]-(title_size[0]/2),50)
+
+        leave_text = "Press ESC to leave"
+        leave = self.fonts["small_title_font"].render(leave_text,True,WHITE)
+        leave_size = self.fonts["small_title_font"].size(leave_text)
+        leave_pos = (get_middle()[0]-(leave_size[0]/2),get_screen_dim()[1]-50-leave_size[1])
+
+        while self.running:
+            self.clock.tick(self.fps)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  
+                    self.running = False
+                    pygame.quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.running = False
+            self.screen.fill((0,0,0))
+            # Blit Text
+            self.screen.blit(title_shadow,(title_pos[0]+5,title_pos[1]+5))
+            self.screen.blit(title,title_pos)
+            self.screen.blit(leave,leave_pos)
+            
+            pygame.display.flip()
+
+class Players_Menu(object):
+    def __init__(self,screen,asset_manager):
+        self.running = True
+        self.screen = screen
+        self.fonts = asset_manager.get_fonts()
+        self.background_music = asset_manager.get_music()["title"]
+        self.sounds = asset_manager.get_sounds()
+        self.clock = pygame.time.Clock()
+        self.fps = 20
+        self.loop()
+
+    def loop(self):
+        pygame.display.set_caption('Connect 4 Player Management')
+        title_text = "Manage Players"
+        title = self.fonts["title_font_big"].render(title_text,True,WHITE)
+        title_shadow = self.fonts["title_font_big"].render(title_text,True,GREY)
+        title_size = self.fonts["title_font_big"].size(title_text)
+        title_pos = (get_middle()[0]-(title_size[0]/2),50)
+
+        leave_text = "Press ESC to leave"
+        leave = self.fonts["small_title_font"].render(leave_text,True,WHITE)
+        leave_size = self.fonts["small_title_font"].size(leave_text)
+        leave_pos = (get_middle()[0]-(leave_size[0]/2),get_screen_dim()[1]-50-leave_size[1])
+
+        while self.running:
+            self.clock.tick(self.fps)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  
+                    self.running = False
+                    pygame.quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.running = False
+            self.screen.fill((0,0,0))
+            # Blit Text
+            self.screen.blit(title_shadow,(title_pos[0]+5,title_pos[1]+5))
+            self.screen.blit(title,title_pos)
+            self.screen.blit(leave,leave_pos)
             
             pygame.display.flip()
